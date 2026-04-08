@@ -14,7 +14,94 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      patients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      session_readings: {
+        Row: {
+          flex1: number
+          flex2: number
+          id: string
+          session_id: string
+          timestamp_ms: number
+        }
+        Insert: {
+          flex1: number
+          flex2: number
+          id?: string
+          session_id: string
+          timestamp_ms: number
+        }
+        Update: {
+          flex1?: number
+          flex2?: number
+          id?: string
+          session_id?: string
+          timestamp_ms?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_readings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          ended_at: string
+          id: string
+          patient_id: string
+          started_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds: number
+          ended_at: string
+          id?: string
+          patient_id: string
+          started_at: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          ended_at?: string
+          id?: string
+          patient_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
