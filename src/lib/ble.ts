@@ -1,3 +1,5 @@
+/// <reference types="web-bluetooth" />
+
 const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 const TX_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 const RX_UUID = "beb5483f-36e1-4688-b7f5-ea07361b26a8";
@@ -8,30 +10,30 @@ export interface BLEData {
   s: number;
 }
 
-let bleDevice: BluetoothDevice | null = null;
-let rxChar: BluetoothRemoteGATTCharacteristic | null = null;
+let bleDevice: any = null;
+let rxChar: any = null;
 
 export async function connectBLE(
   onData: (data: BLEData) => void,
   onDisconnect: () => void
 ): Promise<void> {
-  bleDevice = await navigator.bluetooth.requestDevice({
+  const nav = navigator as any;
+  bleDevice = await nav.bluetooth.requestDevice({
     filters: [{ name: "ESP32_Flex_BLE" }],
     optionalServices: [SERVICE_UUID],
   });
-  const server = await bleDevice!.gatt!.connect();
+  const server = await bleDevice.gatt.connect();
   const service = await server.getPrimaryService(SERVICE_UUID);
   rxChar = await service.getCharacteristic(RX_UUID);
   const tx = await service.getCharacteristic(TX_UUID);
   await tx.startNotifications();
 
-  tx.addEventListener("characteristicvaluechanged", (e: Event) => {
-    const target = e.target as BluetoothRemoteGATTCharacteristic;
-    const data: BLEData = JSON.parse(new TextDecoder().decode(target.value!));
+  tx.addEventListener("characteristicvaluechanged", (e: any) => {
+    const data: BLEData = JSON.parse(new TextDecoder().decode(e.target.value));
     onData(data);
   });
 
-  bleDevice!.addEventListener("gattserverdisconnected", onDisconnect);
+  bleDevice.addEventListener("gattserverdisconnected", onDisconnect);
 }
 
 export function disconnectBLE() {
@@ -43,7 +45,6 @@ export async function sendCommand(cmd: string) {
   await rxChar.writeValue(new TextEncoder().encode(cmd));
 }
 
-// Audio beep
 let audioCtx: AudioContext | null = null;
 export function beep() {
   if (!audioCtx) audioCtx = new AudioContext();
