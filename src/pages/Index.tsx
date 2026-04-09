@@ -57,7 +57,8 @@ const Index = () => {
           <AnalysisPage patient={patient} isConnected={isConnected} />
         )}
         {page === "archive" && <ArchivePage />}
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
