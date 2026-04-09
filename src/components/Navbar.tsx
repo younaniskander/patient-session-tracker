@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.jpg";
 
 interface NavbarProps {
   activePage: string;
@@ -14,7 +15,7 @@ export function Navbar({ activePage, onNavigate, isConnected, onConnect }: Navba
     <nav className="bg-card border-b border-border sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 flex justify-between items-center h-16">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold text-primary-foreground text-sm">G</div>
+          <img src={logo} alt="Logo" className="w-8 h-8 rounded object-cover" />
           <span className="text-xl font-bold tracking-tight">
             session-tracker <span className="text-primary">PT</span>
           </span>
