@@ -138,6 +138,7 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
           )} />
           <span className="text-muted-foreground text-sm">Flex Sensor 1</span>
           <div className="text-5xl font-mono font-bold my-2">{flex1}</div>
+          <div className="text-lg text-primary font-semibold mb-2">{rawToWeight(flex1)} kg</div>
           <div className="w-full bg-muted h-2 rounded-full">
             <div className="sensor-bar bg-primary h-full rounded-full" style={{ width: `${(flex1 / 4095) * 100}%` }} />
           </div>
