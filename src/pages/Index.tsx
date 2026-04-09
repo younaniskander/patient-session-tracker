@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
+import bgImage from "@/assets/bg.png";
 import { ProfilePage, type Patient } from "./ProfilePage";
 import { AnalysisPage } from "./AnalysisPage";
 import { ArchivePage } from "./ArchivePage";
