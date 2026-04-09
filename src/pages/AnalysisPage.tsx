@@ -16,6 +16,14 @@ interface AnalysisPageProps {
 }
 
 const THRESHOLD = 2780;
+const RAW_MIN = 2700;
+const RAW_MAX = 2900;
+const WEIGHT_MAX = 100; // kg
+
+function rawToWeight(raw: number): number {
+  const clamped = Math.max(RAW_MIN, Math.min(RAW_MAX, raw));
+  return parseFloat((((clamped - RAW_MIN) / (RAW_MAX - RAW_MIN)) * WEIGHT_MAX).toFixed(1));
+}
 
 export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
   const [flex1, setFlex1] = useState(0);
@@ -130,6 +138,7 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
           )} />
           <span className="text-muted-foreground text-sm">Flex Sensor 1</span>
           <div className="text-5xl font-mono font-bold my-2">{flex1}</div>
+          <div className="text-lg text-primary font-semibold mb-2">{rawToWeight(flex1)} kg</div>
           <div className="w-full bg-muted h-2 rounded-full">
             <div className="sensor-bar bg-primary h-full rounded-full" style={{ width: `${(flex1 / 4095) * 100}%` }} />
           </div>
@@ -141,6 +150,7 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
           )} />
           <span className="text-muted-foreground text-sm">Flex Sensor 2</span>
           <div className="text-5xl font-mono font-bold my-2">{flex2}</div>
+          <div className="text-lg text-primary font-semibold mb-2">{rawToWeight(flex2)} kg</div>
           <div className="w-full bg-muted h-2 rounded-full">
             <div className="sensor-bar bg-[hsl(270,70%,60%)] h-full rounded-full" style={{ width: `${(flex2 / 4095) * 100}%` }} />
           </div>
