@@ -16,7 +16,7 @@ export function Navbar({ activePage, onNavigate, isConnected, onConnect }: Navba
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold text-primary-foreground text-sm">G</div>
           <span className="text-xl font-bold tracking-tight">
-            GaitMat <span className="text-primary">Pro</span>
+            session-tracker <span className="text-primary">PT</span>
           </span>
         </div>
         <div className="hidden md:flex space-x-8">
