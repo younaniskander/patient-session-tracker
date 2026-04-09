@@ -38,13 +38,14 @@ const Index = () => {
         style={{ backgroundImage: `url(${bgImage})` }}
       />
       <div className="fixed inset-0 z-0 bg-background/85 backdrop-blur-sm" />
-      <Navbar
-        activePage={page}
-        onNavigate={setPage}
-        isConnected={isConnected}
-        onConnect={handleConnect}
-      />
-      <main className="max-w-6xl mx-auto p-6">
+      <div className="relative z-10">
+        <Navbar
+          activePage={page}
+          onNavigate={setPage}
+          isConnected={isConnected}
+          onConnect={handleConnect}
+        />
+        <main className="max-w-6xl mx-auto p-6">
         {page === "profile" && (
           <ProfilePage
             selectedPatient={patient}
