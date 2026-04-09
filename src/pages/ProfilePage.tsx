@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 
 export interface Patient {
   id: string;
@@ -19,6 +20,9 @@ export function ProfilePage({ selectedPatient, onSelectPatient, onNavigate }: Pr
   const [name, setName] = useState("");
   const [weight, setWeight] = useState("");
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editWeight, setEditWeight] = useState("");
 
   useEffect(() => {
     loadPatients();
@@ -44,6 +48,38 @@ export function ProfilePage({ selectedPatient, onSelectPatient, onNavigate }: Pr
     }
   }
 
+  async function deletePatient(id: string) {
+    await supabase.from("session_readings").delete().in(
+      "session_id",
+      (await supabase.from("sessions").select("id").eq("patient_id", id)).data?.map((s) => s.id) || []
+    );
+    await supabase.from("sessions").delete().eq("patient_id", id);
+    await supabase.from("patients").delete().eq("id", id);
+    if (selectedPatient?.id === id) onSelectPatient(null as any);
+    loadPatients();
+  }
+
+  function startEdit(p: Patient) {
+    setEditingId(p.id);
+    setEditName(p.name);
+    setEditWeight(p.weight?.toString() || "");
+  }
+
+  async function saveEdit() {
+    if (!editingId || !editName.trim()) return;
+    const { error } = await supabase
+      .from("patients")
+      .update({ name: editName.trim(), weight: editWeight ? parseFloat(editWeight) : null })
+      .eq("id", editingId);
+    if (!error) {
+      if (selectedPatient?.id === editingId) {
+        onSelectPatient({ id: editingId, name: editName.trim(), weight: editWeight ? parseFloat(editWeight) : null });
+      }
+      setEditingId(null);
+      loadPatients();
+    }
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Patient Management</h2>
@@ -51,17 +87,8 @@ export function ProfilePage({ selectedPatient, onSelectPatient, onNavigate }: Pr
         <div className="bg-card p-6 rounded-2xl border border-border">
           <h3 className="text-lg font-semibold mb-4 text-primary">Add New Patient</h3>
           <div className="space-y-4">
-            <Input
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <Input
-              type="number"
-              placeholder="Weight (kg)"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
+            <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input type="number" placeholder="Weight (kg)" value={weight} onChange={(e) => setWeight(e.target.value)} />
             <Button onClick={savePatient} className="w-full">Save Patient</Button>
           </div>
         </div>
@@ -80,16 +107,42 @@ export function ProfilePage({ selectedPatient, onSelectPatient, onNavigate }: Pr
           <h3 className="text-lg font-semibold mb-3">Existing Patients</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {patients.map((p) => (
-              <button
+              <div
                 key={p.id}
-                onClick={() => onSelectPatient(p)}
-                className={`bg-card p-4 rounded-xl border text-left transition-all ${
+                className={`bg-card p-4 rounded-xl border transition-all ${
                   selectedPatient?.id === p.id ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/50"
                 }`}
               >
-                <p className="font-semibold">{p.name}</p>
-                <p className="text-sm text-muted-foreground">{p.weight ? `${p.weight} kg` : "No weight"}</p>
-              </button>
+                {editingId === p.id ? (
+                  <div className="space-y-2">
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Name" />
+                    <Input type="number" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} placeholder="Weight (kg)" />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveEdit} className="flex-1 gap-1">
+                        <Check className="w-4 h-4" /> حفظ
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingId(null)} className="flex-1 gap-1">
+                        <X className="w-4 h-4" /> إلغاء
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="cursor-pointer" onClick={() => onSelectPatient(p)}>
+                      <p className="font-semibold">{p.name}</p>
+                      <p className="text-sm text-muted-foreground">{p.weight ? `${p.weight} kg` : "No weight"}</p>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Button size="sm" variant="outline" onClick={() => startEdit(p)} className="flex-1 gap-1">
+                        <Pencil className="w-3.5 h-3.5" /> تعديل
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => deletePatient(p.id)} className="flex-1 gap-1">
+                        <Trash2 className="w-3.5 h-3.5" /> مسح
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
             ))}
           </div>
         </div>
