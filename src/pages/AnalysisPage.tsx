@@ -16,6 +16,14 @@ interface AnalysisPageProps {
 }
 
 const THRESHOLD = 2780;
+const RAW_MIN = 2700;
+const RAW_MAX = 2900;
+const WEIGHT_MAX = 100; // kg
+
+function rawToWeight(raw: number): number {
+  const clamped = Math.max(RAW_MIN, Math.min(RAW_MAX, raw));
+  return parseFloat((((clamped - RAW_MIN) / (RAW_MAX - RAW_MIN)) * WEIGHT_MAX).toFixed(1));
+}
 
 export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
   const [flex1, setFlex1] = useState(0);
