@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
+import bgImage from "@/assets/bg.png";
 import { ProfilePage, type Patient } from "./ProfilePage";
 import { AnalysisPage } from "./AnalysisPage";
 import { ArchivePage } from "./ArchivePage";
@@ -31,14 +32,20 @@ const Index = () => {
   }, [isConnected]);
 
   return (
-    <div className="min-h-screen">
-      <Navbar
-        activePage={page}
-        onNavigate={setPage}
-        isConnected={isConnected}
-        onConnect={handleConnect}
+    <div className="min-h-screen relative">
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${bgImage})` }}
       />
-      <main className="max-w-6xl mx-auto p-6">
+      <div className="fixed inset-0 z-0 bg-background/85 backdrop-blur-sm" />
+      <div className="relative z-10">
+        <Navbar
+          activePage={page}
+          onNavigate={setPage}
+          isConnected={isConnected}
+          onConnect={handleConnect}
+        />
+        <main className="max-w-6xl mx-auto p-6">
         {page === "profile" && (
           <ProfilePage
             selectedPatient={patient}
@@ -50,7 +57,8 @@ const Index = () => {
           <AnalysisPage patient={patient} isConnected={isConnected} />
         )}
         {page === "archive" && <ArchivePage />}
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
