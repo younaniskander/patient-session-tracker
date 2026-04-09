@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.jpg";
 
 interface NavbarProps {
   activePage: string;
