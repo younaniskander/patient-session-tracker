@@ -32,7 +32,12 @@ const Index = () => {
   }, [isConnected]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      />
+      <div className="fixed inset-0 z-0 bg-background/85 backdrop-blur-sm" />
       <Navbar
         activePage={page}
         onNavigate={setPage}
