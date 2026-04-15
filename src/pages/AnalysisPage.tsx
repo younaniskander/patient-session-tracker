@@ -15,10 +15,11 @@ interface AnalysisPageProps {
   isConnected: boolean;
 }
 
-const THRESHOLD = 2780;
 const RAW_MIN = 2700;
-const RAW_MAX = 2900;
+const RAW_MAX = 3300;
 const WEIGHT_MAX = 100; // kg
+const THRESHOLD_MIN = 2900;
+const THRESHOLD_MAX = 3300;
 
 function rawToWeight(raw: number): number {
   const clamped = Math.max(RAW_MIN, Math.min(RAW_MAX, raw));
@@ -28,6 +29,8 @@ function rawToWeight(raw: number): number {
 export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
   const [flex1, setFlex1] = useState(0);
   const [flex2, setFlex2] = useState(0);
+  const [threshold1, setThreshold1] = useState(2900);
+  const [threshold2, setThreshold2] = useState(2900);
   const [sessionActive, setSessionActive] = useState(false);
   const [led1, setLed1] = useState(false);
   const [led2, setLed2] = useState(false);
@@ -50,16 +53,16 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
       const elapsed = Date.now() - sessionStartRef.current!.getTime();
       readingsRef.current.push({ flex1: data.f1, flex2: data.f2, timestamp_ms: elapsed });
 
-      if (data.f1 > THRESHOLD) { if (!t1Ref.current) { beep(); t1Ref.current = true; } setLed1(true); }
+      if (data.f1 > threshold1) { if (!t1Ref.current) { beep(); t1Ref.current = true; } setLed1(true); }
       else { t1Ref.current = false; setLed1(false); }
-      if (data.f2 > THRESHOLD) { if (!t2Ref.current) { beep(); t2Ref.current = true; } setLed2(true); }
+      if (data.f2 > threshold2) { if (!t2Ref.current) { beep(); t2Ref.current = true; } setLed2(true); }
       else { t2Ref.current = false; setLed2(false); }
     } else {
       setSessionActive(false);
       setLed1(false);
       setLed2(false);
     }
-  }, []);
+  }, [threshold1, threshold2]);
 
   // Expose handleData to parent via window for BLE callback
   (window as any).__analysisHandleData = handleData;
@@ -67,6 +70,8 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
   async function startSession() {
     sessionStartRef.current = new Date();
     readingsRef.current = [];
+    // Send thresholds to ESP32 before starting
+    await sendCommand(`thresh:${threshold1},${threshold2}`);
     await sendCommand("start");
   }
 
@@ -90,7 +95,6 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
       .single();
 
     if (session && readingsRef.current.length > 0) {
-      // Sample readings to max ~500 points for storage
       const readings = readingsRef.current;
       const sampled = readings.length > 500
         ? readings.filter((_, i) => i % Math.ceil(readings.length / 500) === 0)
@@ -127,6 +131,51 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
           <span className={cn("text-xs uppercase block", sessionActive ? "text-success" : "text-muted-foreground")}>
             {sessionActive ? "Active" : "Inactive"}
           </span>
+        </div>
+      </div>
+
+      {/* Alarm Threshold Sliders */}
+      <div className="bg-card p-5 rounded-2xl border border-border mb-6">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-4">Alarm Thresholds</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-muted-foreground">Flex Sensor 1</span>
+              <span className="text-sm font-mono font-bold text-primary">{threshold1}</span>
+            </div>
+            <input
+              type="range"
+              min={THRESHOLD_MIN}
+              max={THRESHOLD_MAX}
+              value={threshold1}
+              onChange={(e) => setThreshold1(Number(e.target.value))}
+              disabled={sessionActive}
+              className="w-full accent-primary h-2 rounded-full cursor-pointer disabled:opacity-40"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>{THRESHOLD_MIN}</span>
+              <span>{THRESHOLD_MAX}</span>
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-muted-foreground">Flex Sensor 2</span>
+              <span className="text-sm font-mono font-bold text-[hsl(270,70%,60%)]">{threshold2}</span>
+            </div>
+            <input
+              type="range"
+              min={THRESHOLD_MIN}
+              max={THRESHOLD_MAX}
+              value={threshold2}
+              onChange={(e) => setThreshold2(Number(e.target.value))}
+              disabled={sessionActive}
+              className="w-full accent-[hsl(270,70%,60%)] h-2 rounded-full cursor-pointer disabled:opacity-40"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>{THRESHOLD_MIN}</span>
+              <span>{THRESHOLD_MAX}</span>
+            </div>
+          </div>
         </div>
       </div>
 
