@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { CheckCircle2, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { sendCommand, beep, type BLEData } from "@/lib/ble";
@@ -17,6 +17,8 @@ interface Reading {
 interface AnalysisPageProps {
   patient: Patient | null;
   isConnected: boolean;
+  liveData: BLEData;
+  registerHandler: (handler: (data: BLEData) => void) => void;
 }
 
 // Map raw 2900 -> 0% and 3300 -> 100%
@@ -28,9 +30,9 @@ function rawToPercent(raw: number): number {
   return ((clamped - RAW_MIN) / (RAW_MAX - RAW_MIN)) * 100;
 }
 
-export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
-  const [flex1, setFlex1] = useState(0);
-  const [flex2, setFlex2] = useState(0);
+export function AnalysisPage({ patient, isConnected, liveData, registerHandler }: AnalysisPageProps) {
+  const [flex1, setFlex1] = useState(liveData.f1);
+  const [flex2, setFlex2] = useState(liveData.f2);
   const [threshold1, setThreshold1] = useState<number | null>(null);
   const [threshold2, setThreshold2] = useState<number | null>(null);
   const [sessionActive, setSessionActive] = useState(false);
@@ -91,9 +93,16 @@ export function AnalysisPage({ patient, isConnected }: AnalysisPageProps) {
     [threshold1, threshold2]
   );
 
-  // Expose handleData to parent via window for BLE callback
-  (window as unknown as { __analysisHandleData: typeof handleData }).__analysisHandleData =
-    handleData;
+  // Register the handler with the parent so live BLE data flows in
+  useEffect(() => {
+    registerHandler(handleData);
+  }, [handleData, registerHandler]);
+
+  // Always reflect latest live data even before a session starts
+  useEffect(() => {
+    setFlex1(liveData.f1);
+    setFlex2(liveData.f2);
+  }, [liveData]);
 
   async function startSession(t1: number, t2: number) {
     setThreshold1(t1);

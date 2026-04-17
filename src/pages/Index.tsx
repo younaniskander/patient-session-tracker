@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import bgImage from "@/assets/bg.png";
 import { ProfilePage, type Patient } from "./ProfilePage";
@@ -10,6 +10,8 @@ const Index = () => {
   const [page, setPage] = useState("profile");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [liveData, setLiveData] = useState<BLEData>({ f1: 0, f2: 0, s: 0 });
+  const dataHandlerRef = useRef<((data: BLEData) => void) | null>(null);
 
   const handleConnect = useCallback(async () => {
     if (isConnected) {
@@ -20,8 +22,8 @@ const Index = () => {
     try {
       await connectBLE(
         (data: BLEData) => {
-          const handler = (window as any).__analysisHandleData;
-          if (handler) handler(data);
+          setLiveData(data);
+          dataHandlerRef.current?.(data);
         },
         () => setIsConnected(false)
       );
@@ -54,7 +56,12 @@ const Index = () => {
           />
         )}
         {page === "analysis" && (
-          <AnalysisPage patient={patient} isConnected={isConnected} />
+          <AnalysisPage
+            patient={patient}
+            isConnected={isConnected}
+            liveData={liveData}
+            registerHandler={(h) => { dataHandlerRef.current = h; }}
+          />
         )}
         {page === "archive" && <ArchivePage />}
         </main>
