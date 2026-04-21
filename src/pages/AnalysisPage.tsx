@@ -21,9 +21,9 @@ interface AnalysisPageProps {
   registerHandler: (handler: (data: BLEData) => void) => void;
 }
 
-// Map raw 3000 -> 0% and 3300 -> 100%
-const RAW_MIN = 3000;
-const RAW_MAX = 3300;
+// Map raw 2950 -> 0% and 3150 -> 100%
+const RAW_MIN = 2950;
+const RAW_MAX = 3150;
 
 function rawToPercent(raw: number): number {
   const clamped = Math.max(RAW_MIN, Math.min(RAW_MAX, raw));
