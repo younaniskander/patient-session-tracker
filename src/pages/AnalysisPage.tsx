@@ -21,13 +21,15 @@ interface AnalysisPageProps {
   registerHandler: (handler: (data: BLEData) => void) => void;
 }
 
-// Map raw 2950 -> 0% and 3150 -> 100%
-const RAW_MIN = 2950;
-const RAW_MAX = 3150;
+// Independent calibration ranges for each sensor
+const SENSOR_1_RAW_MIN = 2950;
+const SENSOR_1_RAW_MAX = 3150;
+const SENSOR_2_RAW_MIN = 3000;
+const SENSOR_2_RAW_MAX = 3300;
 
-function rawToPercent(raw: number): number {
-  const clamped = Math.max(RAW_MIN, Math.min(RAW_MAX, raw));
-  return ((clamped - RAW_MIN) / (RAW_MAX - RAW_MIN)) * 100;
+function rawToPercent(raw: number, min: number, max: number): number {
+  const clamped = Math.max(min, Math.min(max, raw));
+  return ((clamped - min) / (max - min)) * 100;
 }
 
 export function AnalysisPage({ patient, isConnected, liveData, registerHandler }: AnalysisPageProps) {
@@ -61,8 +63,8 @@ export function AnalysisPage({ patient, isConnected, liveData, registerHandler }
           timestamp_ms: elapsed,
         });
 
-        const p1 = rawToPercent(data.f1);
-        const p2 = rawToPercent(data.f2);
+        const p1 = rawToPercent(data.f1, SENSOR_1_RAW_MIN, SENSOR_1_RAW_MAX);
+        const p2 = rawToPercent(data.f2, SENSOR_2_RAW_MIN, SENSOR_2_RAW_MAX);
 
         if (threshold1 != null && p1 >= threshold1) {
           if (!t1Ref.current) {
@@ -180,8 +182,8 @@ export function AnalysisPage({ patient, isConnected, liveData, registerHandler }
   }
 
   // Live monitoring view
-  const p1 = rawToPercent(flex1);
-  const p2 = rawToPercent(flex2);
+  const p1 = rawToPercent(flex1, SENSOR_1_RAW_MIN, SENSOR_1_RAW_MAX);
+  const p2 = rawToPercent(flex2, SENSOR_2_RAW_MIN, SENSOR_2_RAW_MAX);
 
   return (
     <div>
