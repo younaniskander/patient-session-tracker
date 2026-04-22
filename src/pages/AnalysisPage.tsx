@@ -24,8 +24,8 @@ interface AnalysisPageProps {
 // Independent calibration ranges for each sensor
 const SENSOR_1_RAW_MIN = 2950;
 const SENSOR_1_RAW_MAX = 3150;
-const SENSOR_2_RAW_MIN = 300;
-const SENSOR_2_RAW_MAX = 400;
+const SENSOR_2_RAW_MIN = 360;
+const SENSOR_2_RAW_MAX = 420;
 
 function rawToPercent(raw: number, min: number, max: number): number {
   const clamped = Math.max(min, Math.min(max, raw));
